@@ -14,11 +14,11 @@ function App() {
 
   const pageTitles = {
     "/": "Home",
-    "/about": "About | Aiden Brooks | CG MWT AUG 2024",
+    "/about": "About",
   };
 
   useEffect(() => {
-    const currentTitle = pageTitles[location.pathname] || "Aiden Brooks";
+    const currentTitle = pageTitles[location.pathname] || "Ai-powered";
     document.title = currentTitle;
 
     if (location.pathname !== "/archive") {
