@@ -1,0 +1,34 @@
+.history-container{
+    width: 25%;
+    height: 100%;
+    border-radius: 20px;
+    background-color: #ffe50033;
+    padding: 1rem;
+    backdrop-filter: blur(20px);
+    transition: width 0.3s ease;
+
+}
+
+.history-header{
+    display: flex;
+    flex-direction: column;
+    margin-top: 3rem;
+}
+
+.history-container.closed {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+@media (max-width: 1024px){
+    .history-container{
+        background-color: #b7a50042;
+        padding: 1rem;
+        position: absolute;
+        z-index: 20;
+        width: 40%;
+        height: 98%;
+    }
+
+}
