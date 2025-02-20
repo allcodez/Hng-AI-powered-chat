@@ -14,11 +14,12 @@ const Session = ({ name }) => {
     const [loading, setLoading] = useState(false); // Global loading state
     const textAreaRef = useRef(null);
     const [error, setError] = useState(null);
+    const [processingMessage, setProcessingMessage] = useState(null);
 
     useEffect(() => {
         if (textAreaRef.current) {
-            textAreaRef.current.style.height = "40px"; // Reset height
-            textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px"; // Set new height
+            textAreaRef.current.style.height = "40px";
+            textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px";
         }
     }, [userInput]);
 
@@ -191,23 +192,30 @@ const Session = ({ name }) => {
 
     // Function to translate text
     const translateText = async (inputText, taskId, targetLang) => {
-        setError(null);
+        setError(null); // Clear any previous errors
+
+        if (!targetLang) { // Check if a language is selected
+            setProcessingMessage("Please select a language before translating.");
+            return;
+        }
+
+        setProcessingMessage("Translating..."); // Set processing message
+
         const task = tasks.find(task => task.id === taskId);
         if (!task || !task.detectedLanguage) {
-            setError("Please detect the language before translating.");
+            setError("Language was not detected.");
+            setProcessingMessage(null); // Clear processing message
             return;
         }
 
         try {
-            setLoading(true); // Start loading
+            setLoading(true);
             const translator = await self.ai.translator.create({
                 sourceLanguage: task.detectedLanguage,
                 targetLanguage: targetLang,
             });
 
             const translatedText = await translator.translate(inputText);
-
-            // Update task with output and ensure actionType is 'Translate'
             setTasks(prevTasks => {
                 const updatedTasks = prevTasks.map(task =>
                     task.id === taskId
@@ -223,11 +231,13 @@ const Session = ({ name }) => {
                 localStorage.setItem("taskHistory", JSON.stringify(updatedTasks));
                 return updatedTasks;
             });
+
         } catch (error) {
             console.error("Translation error:", error);
-            setError("An error occurred during translation. \n Please try another language.");
+            setError("An error occurred during translation. Please try another language.");
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
+            setProcessingMessage(null); // Clear processing message after completion
         }
     };
 
@@ -244,15 +254,13 @@ const Session = ({ name }) => {
                 });
 
                 const summary = await summarizer.summarize(inputText);
-
-                // Update task with the output
-                updateTaskOutput(taskId, summary); // Store raw summary without formatting
+                updateTaskOutput(taskId, summary);
             }
         } catch (error) {
             console.error("Summarization error:", error);
             setError("An error occurred during summarization. Please try again later.");
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
     };
 
@@ -268,16 +276,12 @@ const Session = ({ name }) => {
     const handleSend = () => {
         if (!userInput) return;
 
-        // Add new task
         const newTask = addTask("User Input", userInput);
 
-        // Detect language for the new task
         detectLanguage(userInput, newTask.id);
-
-        setUserInput(""); // Clear input field
+        setUserInput("");
     };
 
-    // Handle Language Selection
     const handleLanguageSelect = (taskId, langCode) => {
         setSelectedLanguage((prev) => ({
             ...prev,
@@ -285,15 +289,19 @@ const Session = ({ name }) => {
         }));
         setDropdownOpen((prev) => ({
             ...prev,
-            [taskId]: false, // Close dropdown after selection
+            [taskId]: false,
         }));
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
     };
 
     return (
         <div className="session-container">
-            {/* Show Loader when loading */}
-
-            {/* Hide session header when there are tasks */}
             {tasks.length === 0 && (
                 <div className="session-header">
                     <h1>👋🏽 Hi, {name}!</h1>
@@ -361,12 +369,21 @@ const Session = ({ name }) => {
                                 </div>
 
                                 <button
-                                className="task-button"
-                                    onClick={() =>
-                                        selectedLanguage[task.id] &&
-                                        translateText(task.input, task.id, selectedLanguage[task.id])
-                                    }
-                                    disabled={!selectedLanguage[task.id]}
+                                    className="task-button"
+                                    // onClick={() =>
+                                    //     selectedLanguage[task.id] &&
+                                    //     translateText(task.input, task.id, selectedLanguage[task.id])
+                                    // }
+                                    // disabled={!selectedLanguage[task.id]}
+
+                                    onClick={() => {
+                                        if (!selectedLanguage[task.id]) {
+                                            setProcessingMessage("Please select a language before translating.");
+                                            return;
+                                        }
+                                        translateText(task.input, task.id, selectedLanguage[task.id]);
+                                    }}
+
                                 >
                                     Translate
                                 </button>
@@ -406,6 +423,7 @@ const Session = ({ name }) => {
 
             {/* {loading && <p className="loading-text">⏳ Processing...</p>} */}
             {loading && <p className="loading-text">⏳ Processing...</p>}
+            {processingMessage && <p className="loading-text translate-warn">{processingMessage}</p>}
             {error && <p className="error-message">{error}</p>}
 
 
@@ -429,6 +447,7 @@ const Session = ({ name }) => {
                             overflowY: "auto",
                             resize: "none"
                         }}
+                        onKeyDown={handleKeyDown}
                     />
                     <div className="session-button">
                         <div style={{ fontSize: "14px", color: "#888", marginTop: "5px" }}>

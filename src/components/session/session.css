@@ -282,6 +282,12 @@
 
 .loading-text {
     padding: 0.3rem;
+    font-size: 0.8rem;
+}
+
+.translate-warn{
+    color: rgb(255, 140, 0);
+    font-size: 1rem;
 }
 
 .task-button {
