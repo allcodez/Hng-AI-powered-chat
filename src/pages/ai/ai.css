@@ -25,3 +25,14 @@
 .sidebar-close i{
     font-size: 1.5rem;
 }
+
+.unsupported-browser{
+    width: 100%;
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+    height: 100vh;
+}
