@@ -5,10 +5,12 @@ import UserDetails from "../../components/userDetails/UserDetails";
 import History from "../../components/history/History";
 import Session from "../../components/session/Session";
 import { SidebarContext } from "../../context/SidebarContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 const Ai = () => {
     const [name, setName] = useState(localStorage.getItem("username") || "");
     const { toggleSidebar } = useContext(SidebarContext);
+    const navigate = useNavigate();
     // const [isChrome, setIsChrome] = useState(true);
 
     // useEffect(() => {
@@ -25,6 +27,10 @@ const Ai = () => {
     //     </div>;
     // }
 
+    const handleBack = () => {
+        navigate("/"); // Navigate to the home page (root path)
+    };
+
     return (
         <>
             {!name ? (
@@ -34,6 +40,9 @@ const Ai = () => {
                     <Session name={name} />
                 </div>
             )}
+            <p className="sidebar-close" onClick={handleBack}>
+                <i className='bx bx-arrow-back'></i>
+            </p>
         </>
     );
 };
